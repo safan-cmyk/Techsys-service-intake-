@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>Techsys | Service Collection & Delivery</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0b0f1c;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 16px;
+            color: #eef2ff;
+            min-height: 100vh;
+        }
+
+        .app-container {
+            max-width: 550px;
+            margin: 0 auto;
+        }
+
+        /* Mode Toggle Buttons */
+        .mode-toggle {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .mode-btn {
+            flex: 1;
+            padding: 20px 16px;
+            border-radius: 28px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            backdrop-filter: blur(10px);
+        }
+        .mode-btn.collection {
+            background: rgba(34, 197, 94, 0.15);
+            border-color: rgba(34, 197, 94, 0.4);
+        }
+        .mode-btn.collection.active {
+            background: rgba(34, 197, 94, 0.35);
+            border-color: #22c55e;
+            box-shadow: 0 0 20px rgba(34, 197, 94, 0.3);
+        }
+        .mode-btn.delivery {
+            background: rgba(59, 130, 246, 0.15);
+            border-color: rgba(59, 130, 246, 0.4);
+        }
+        .mode-btn.delivery.active {
+            background: rgba(59, 130, 246, 0.35);
+            border-color: #3b82f6;
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+        }
+        .mode-icon {
+            font-size: 2rem;
+            display: block;
+            margin-bottom: 8px;
+        }
+        .mode-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+        .mode-desc {
+            font-size: 0.7rem;
+            opacity: 0.7;
+        }
+
+        /* Form Container */
+        .form-container {
+            background: linear-gradient(145deg, #0f1222 0%, #161a2e 100%);
+            border-radius: 32px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+        }
+
+        .form-header {
+            background: linear-gradient(135deg, #1a1f3a, #0c0f1e);
+            padding: 16px 18px;
+            text-align: center;
+            border-bottom: 1px solid #2a2f4e;
+        }
+
+        .form-header h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #c084fc, #818cf8);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .business-address {
+            font-size: 0.65rem;
+            color: #a5b4fc;
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid #2a2f4e;
+        }
+
+        form {
+            padding: 1.25rem;
+        }
+
+        .form-section {
+            margin-bottom: 20px;
+            border-left: 3px solid #c084fc;
+            padding-left: 12px;
+        }
+
+        .section-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #c4b5fd;
+            margin-bottom: 12px;
+        }
+
+        .field-group {
+            margin-bottom: 14px;
+        }
+
+        .field-group label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            color: #a5b4fc;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .required:after {
+            content: "*";
+            color: #f472b6;
+            margin-left: 4px;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px 14px;
+            background: #0b0e1a;
+            border: 1px solid #2d325a;
+            border-radius: 16px;
+            color: #f0f3ff;
+            font-size: 0.9rem;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #a78bfa;
+        }
+
+        /* Products Table */
+        .products-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .products-table th, .products-table td {
+            padding: 10px 6px;
+            border-bottom: 1px solid #2d325a;
+            text-align: left;
+            font-size: 0.8rem;
+        }
+        .products-table th {
+            color: #a5b4fc;
+        }
+        .add-product-btn {
+            background: #1e1f3a;
+            border: 1px solid #3b82f6;
+            padding: 8px 16px;
+            border-radius: 24px;
+            color: #3b82f6;
+            font-size: 0.8rem;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .delete-row {
+            color: #ef4444;
+            cursor: pointer;
+        }
+
+        .location-preview {
+            background: #0e1122;
+            border-radius: 12px;
+            padding: 10px;
+            font-size: 0.7rem;
+            margin-top: 8px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+        .btn-primary {
+            flex: 1;
+            background: linear-gradient(135deg, #6d28d9, #4c1d95);
+            padding: 14px;
+            border-radius: 40px;
+            color: white;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+        }
+        .btn-secondary {
+            background: #1e1f3a;
+            border: 1px solid #373c6b;
+            padding: 14px;
+            border-radius: 40px;
+            color: #c4b5fd;
+            cursor: pointer;
+        }
+
+        .status-msg {
+            padding: 10px;
+            border-radius: 16px;
+            margin-top: 16px;
+            font-size: 0.75rem;
+            text-align: center;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 480px) {
+            body { padding: 12px; }
+            .mode-btn { padding: 14px 12px; }
+            .mode-icon { font-size: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="app-container">
+    <!-- Mode Selection Toggle -->
+    <div class="mode-toggle">
+        <div class="mode-btn collection active" data-mode="collection">
+            <span class="mode-icon">📦</span>
+            <div class="mode-title">Collection</div>
+            <div class="mode-desc">Items for Service</div>
+        </div>
+        <div class="mode-btn delivery" data-mode="delivery">
+            <span class="mode-icon">🚚</span>
+            <div class="mode-title">Delivery</div>
+            <div class="mode-desc">Items to Customer</div>
+        </div>
+    </div>
+
+    <div class="form-container">
+        <div class="form-header">
+            <h1>✨ Techsys Service System</h1>
+            <div class="business-address">
+                M01, Dar Al Riffa Building, Bur Dubai, UAE | +97143920448 Ext:319
+            </div>
+        </div>
+
+        <form id="mainForm">
+            <input type="hidden" id="modeType" value="collection">
+            
+            <!-- Customer Details -->
+            <div class="form-section">
+                <div class="section-title">👤 Customer Details</div>
+                <div class="field-group">
+                    <label class="required">Customer Name</label>
+                    <input type="text" id="customerName" required>
+                </div>
+                <div class="field-group">
+                    <label class="required">Phone Number</label>
+                    <input type="tel" id="customerPhone" required>
+                </div>
+                <div class="field-group">
+                    <label class="required">Email</label>
+                    <input type="email" id="customerEmail" required>
+                </div>
+                <div class="field-group">
+                    <label>Company</label>
+                    <input type="text" id="company">
+                </div>
+            </div>
+
+            <!-- Staff Field -->
+            <div class="form-section">
+                <div class="section-title">👨‍💼 Staff Information</div>
+                <div class="field-group">
+                    <label class="required">Staff Name</label>
+                    <input type="text" id="staffName" list="staffList" placeholder="Select or enter name" required>
+                    <datalist id="staffList">
+                        <option>Ahmed</option><option>Mohammed</option><option>Fatima</option><option>Omar</option><option>Sarah</option>
+                    </datalist>
+                </div>
+            </div>
+
+            <!-- COLLECTION SECTION -->
+            <div id="collectionSection">
+                <div class="form-section">
+                    <div class="section-title">
+                        📋 Products for Service
+                        <button type="button" class="add-product-btn" id="addProductBtn" style="float:right;">+ Add Product</button>
+                        <div style="clear:both"></div>
+                    </div>
+                    <table class="products-table" id="productsTable">
+                        <thead>
+                            <tr><th>Serial Number</th><th>Model/Brand</th><th>Issue</th><th>Action</th></tr>
+                        </thead>
+                        <tbody id="productsBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- DELIVERY SECTION -->
+            <div id="deliverySection" class="hidden">
+                <div class="form-section">
+                    <div class="section-title">📍 Delivery Location</div>
+                    <div class="field-group">
+                        <label>Delivery Address</label>
+                        <textarea id="deliveryAddress" rows="2" placeholder="Full delivery address"></textarea>
+                    </div>
+                </div>
+                <div class="form-section">
+                    <div class="section-title">📦 Items for Delivery</div>
+                    <div id="deliveryItemsContainer"></div>
+                    <button type="button" class="add-product-btn" id="addDeliveryItemBtn">+ Add Item</button>
+                </div>
+            </div>
+
+            <!-- Geo Location Status -->
+            <div class="location-preview" id="geoStatus">
+                🌍 Waiting for location...
+            </div>
+
+            <div class="action-buttons">
+                <button type="button" class="btn-secondary" id="resetBtn">Clear</button>
+                <button type="submit" class="btn-primary">📊 Submit & Print 🧾</button>
+            </div>
+            <div id="statusMsg" class="status-msg"></div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Simple test to see if JavaScript is running
+    console.log("Script loaded successfully");
+    
+    let currentMode = 'collection';
+    let collectionProducts = [{ serial: '', model: '', issue: '' }];
+    let deliveryItems = [];
+    let geoLocation = null;
+    
+    // Mode Toggle
+    document.querySelectorAll('.mode-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentMode = btn.dataset.mode;
+            document.getElementById('modeType').value = currentMode;
+            
+            if (currentMode === 'collection') {
+                document.getElementById('collectionSection').classList.remove('hidden');
+                document.getElementById('deliverySection').classList.add('hidden');
+            } else {
+                document.getElementById('collectionSection').classList.add('hidden');
+                document.getElementById('deliverySection').classList.remove('hidden');
+            }
+        });
+    });
+    
+    // Geo Location Capture
+    function getLocation() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    geoLocation = { lat: position.coords.latitude, lng: position.coords.longitude };
+                    document.getElementById('geoStatus').innerHTML = `📍 Location: ${geoLocation.lat.toFixed(6)}, ${geoLocation.lng.toFixed(6)}`;
+                },
+                () => { document.getElementById('geoStatus').innerHTML = '⚠️ Location access denied'; }
+            );
+        } else {
+            document.getElementById('geoStatus').innerHTML = '⚠️ Geolocation not supported';
+        }
+    }
+    getLocation();
+    
+    // Collection Products Table
+    function renderProductsTable() {
+        const tbody = document.getElementById('productsBody');
+        tbody.innerHTML = '';
+        collectionProducts.forEach((product, idx) => {
+            const row = tbody.insertRow();
+            row.insertCell(0).innerHTML = `<input type="text" value="${product.serial}" class="product-serial" data-idx="${idx}" placeholder="Serial/IMEI" style="width:100%">`;
+            row.insertCell(1).innerHTML = `<input type="text" value="${product.model}" class="product-model" data-idx="${idx}" placeholder="Model" style="width:100%">`;
+            row.insertCell(2).innerHTML = `<input type="text" value="${product.issue}" class="product-issue" data-idx="${idx}" placeholder="Issue" style="width:100%">`;
+            row.insertCell(3).innerHTML = `<span class="delete-row" data-idx="${idx}">🗑️</span>`;
+        });
+        
+        document.querySelectorAll('.product-serial').forEach(inp => {
+            inp.addEventListener('change', (e) => collectionProducts[e.target.dataset.idx].serial = e.target.value);
+        });
+        document.querySelectorAll('.product-model').forEach(inp => {
+            inp.addEventListener('change', (e) => collectionProducts[e.target.dataset.idx].model = e.target.value);
+        });
+        document.querySelectorAll('.product-issue').forEach(inp => {
+            inp.addEventListener('change', (e) => collectionProducts[e.target.dataset.idx].issue = e.target.value);
+        });
+        document.querySelectorAll('.delete-row').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                collectionProducts.splice(parseInt(e.target.dataset.idx), 1);
+                if (collectionProducts.length === 0) collectionProducts = [{ serial: '', model: '', issue: '' }];
+                renderProductsTable();
+            });
+        });
+    }
+    
+    document.getElementById('addProductBtn').addEventListener('click', () => {
+        collectionProducts.push({ serial: '', model: '', issue: '' });
+        renderProductsTable();
+    });
+    renderProductsTable();
+    
+    // Delivery Items
+    function renderDeliveryItems() {
+        const container = document.getElementById('deliveryItemsContainer');
+        container.innerHTML = '';
+        deliveryItems.forEach((item, idx) => {
+            const div = document.createElement('div');
+            div.style.background = '#0e1122';
+            div.style.borderRadius = '16px';
+            div.style.padding = '12px';
+            div.style.marginBottom = '12px';
+            div.innerHTML = `
+                <div class="field-group"><label>Serial Number</label><input type="text" class="delivery-serial" data-idx="${idx}" value="${item.serial}" placeholder="Scan or enter serial"></div>
+                <div class="field-group"><label>Product Model</label><input type="text" class="delivery-model" data-idx="${idx}" value="${item.model}"></div>
+                <button type="button" class="delete-delivery" data-idx="${idx}" style="background:#ef444430; border:none; padding:6px; border-radius:12px;">Remove</button>
+            `;
+            container.appendChild(div);
+        });
+        
+        document.querySelectorAll('.delivery-serial').forEach(inp => {
+            inp.addEventListener('change', (e) => deliveryItems[e.target.dataset.idx].serial = e.target.value);
+        });
+        document.querySelectorAll('.delivery-model').forEach(inp => {
+            inp.addEventListener('change', (e) => deliveryItems[e.target.dataset.idx].model = e.target.value);
+        });
+        document.querySelectorAll('.delete-delivery').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                deliveryItems.splice(parseInt(e.target.dataset.idx), 1);
+                renderDeliveryItems();
+            });
+        });
+    }
+    
+    document.getElementById('addDeliveryItemBtn')?.addEventListener('click', () => {
+        deliveryItems.push({ serial: '', model: '' });
+        renderDeliveryItems();
+    });
+    
+    // Form Submit
+    document.getElementById('mainForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const formData = {
+            mode: currentMode,
+            timestamp: new Date().toISOString(),
+            customerName: document.getElementById('customerName').value,
+            customerPhone: document.getElementById('customerPhone').value,
+            customerEmail: document.getElementById('customerEmail').value,
+            company: document.getElementById('company').value,
+            staffName: document.getElementById('staffName').value,
+            geoLocation: geoLocation,
+            collectionProducts: currentMode === 'collection' ? collectionProducts : [],
+            deliveryAddress: currentMode === 'delivery' ? document.getElementById('deliveryAddress').value : '',
+            deliveryItems: currentMode === 'delivery' ? deliveryItems : []
+        };
+        
+        if (!formData.customerName || !formData.customerPhone || !formData.customerEmail || !formData.staffName) {
+            document.getElementById('statusMsg').innerHTML = '❌ Please fill all required fields';
+            document.getElementById('statusMsg').style.background = '#7f1a1a';
+            return;
+        }
+        
+        const token = `${currentMode === 'collection' ? 'CL' : 'DL'}-${Date.now()}`;
+        document.getElementById('statusMsg').innerHTML = `✅ Submitted! Token: ${token}`;
+        document.getElementById('statusMsg').style.background = '#064e3b';
+        
+        // Clear form
+        document.getElementById('customerName').value = '';
+        document.getElementById('customerPhone').value = '';
+        document.getElementById('customerEmail').value = '';
+        document.getElementById('company').value = '';
+        document.getElementById('staffName').value = '';
+        document.getElementById('deliveryAddress').value = '';
+        collectionProducts = [{ serial: '', model: '', issue: '' }];
+        deliveryItems = [];
+        renderProductsTable();
+        renderDeliveryItems();
+        getLocation();
+        
+        setTimeout(() => {
+            document.getElementById('statusMsg').innerHTML = '';
+        }, 5000);
+    });
+    
+    document.getElementById('resetBtn').addEventListener('click', () => {
+        document.getElementById('customerName').value = '';
+        document.getElementById('customerPhone').value = '';
+        document.getElementById('customerEmail').value = '';
+        document.getElementById('company').value = '';
+        document.getElementById('staffName').value = '';
+        document.getElementById('deliveryAddress').value = '';
+        collectionProducts = [{ serial: '', model: '', issue: '' }];
+        deliveryItems = [];
+        renderProductsTable();
+        renderDeliveryItems();
+        getLocation();
+        document.getElementById('statusMsg').innerHTML = 'Form cleared';
+    });
+    
+    // Initialize delivery items container
+    renderDeliveryItems();
+</script>
+</body>
+</html>
