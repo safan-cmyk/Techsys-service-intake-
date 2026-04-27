@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>Techsys | Collection & Delivery</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0b0f1c;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 16px;
+            color: #eef2ff;
+            min-height: 100vh;
+        }
+        .app-container { max-width: 550px; margin: 0 auto; }
+        .mode-toggle { display: flex; gap: 16px; margin-bottom: 24px; }
+        .mode-btn {
+            flex: 1; padding: 20px 16px; border-radius: 28px; text-align: center;
+            cursor: pointer; transition: all 0.3s ease; border: 2px solid transparent;
+            backdrop-filter: blur(10px);
+        }
+        .mode-btn.collection {
+            background: rgba(34, 197, 94, 0.15);
+            border-color: rgba(34, 197, 94, 0.4);
+        }
+        .mode-btn.collection.active {
+            background: rgba(34, 197, 94, 0.35);
+            border-color: #22c55e;
+            box-shadow: 0 0 20px rgba(34, 197, 94, 0.3);
+        }
+        .mode-btn.delivery {
+            background: rgba(59, 130, 246, 0.15);
+            border-color: rgba(59, 130, 246, 0.4);
+        }
+        .mode-btn.delivery.active {
+            background: rgba(59, 130, 246, 0.35);
+            border-color: #3b82f6;
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+        }
+        .mode-icon { font-size: 2rem; display: block; margin-bottom: 8px; }
+        .mode-title { font-size: 1.1rem; font-weight: 600; }
+        .mode-desc { font-size: 0.7rem; opacity: 0.7; }
+
+        .form-container {
+            background: linear-gradient(145deg, #0f1222 0%, #161a2e 100%);
+            border-radius: 32px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+        }
+        .form-header {
+            background: linear-gradient(135deg, #1a1f3a, #0c0f1e);
+            padding: 16px 18px;
+            text-align: center;
+            border-bottom: 1px solid #2a2f4e;
+        }
+        .form-header h1 {
+            font-size: 1.5rem;
+            background: linear-gradient(135deg, #c084fc, #818cf8);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .business-address {
+            font-size: 0.65rem;
+            color: #a5b4fc;
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid #2a2f4e;
+        }
+        form { padding: 1.25rem; }
+        .form-section { margin-bottom: 20px; border-left: 3px solid #c084fc; padding-left: 12px; }
+        .section-title { font-size: 0.9rem; font-weight: 600; color: #c4b5fd; margin-bottom: 12px; }
+        .field-group { margin-bottom: 14px; }
+        .field-group label { font-size: 0.7rem; text-transform: uppercase; color: #a5b4fc; display: block; margin-bottom: 4px; }
+        .required:after { content: "*"; color: #f472b6; margin-left: 4px; }
+        input, select, textarea {
+            width: 100%; padding: 12px 14px; background: #0b0e1a;
+            border: 1px solid #2d325a; border-radius: 16px;
+            color: #f0f3ff; font-size: 0.9rem;
+        }
+        input:focus, select:focus { outline: none; border-color: #a78bfa; }
+        .products-table { width: 100%; border-collapse: collapse; }
+        .products-table th, .products-table td {
+            padding: 10px 6px; border-bottom: 1px solid #2d325a;
+            text-align: left; font-size: 0.8rem;
+        }
+        .products-table th { color: #a5b4fc; }
+        .add-product-btn {
+            background: #1e1f3a; border: 1px solid #3b82f6;
+            padding: 8px 16px; border-radius: 24px;
+            color: #3b82f6; font-size: 0.8rem; cursor: pointer;
+            margin-top: 10px;
+        }
+        .delete-row { color: #ef4444; cursor: pointer; }
+        .location-preview {
+            background: #0e1122; border-radius: 12px;
+            padding: 10px; font-size: 0.7rem; margin-top: 8px;
+        }
+        .signature-area {
+            background: #0e1122; border-radius: 20px; padding: 16px;
+            margin-top: 16px; border: 1px solid #3b82f6;
+        }
+        .delivery-confirmation {
+            background: #1a1f3a; border-radius: 16px; padding: 16px;
+            margin-bottom: 16px; text-align: center; border: 1px solid #22c55e;
+        }
+        .delivery-confirmation p { font-size: 0.85rem; color: #22c55e; font-weight: 500; }
+        .delivery-confirmation small { font-size: 0.7rem; color: #a5b4fc; }
+        canvas {
+            border: 2px solid #2d325a; border-radius: 12px;
+            background: white; touch-action: none;
+            width: 100%; height: auto; cursor: crosshair;
+        }
+        .signature-buttons { display: flex; gap: 10px; margin-top: 12px; }
+        .signature-buttons button { flex: 1; padding: 8px; border-radius: 24px; font-size: 0.7rem; cursor: pointer; }
+        .clear-signature { background: #ef444430; border: 1px solid #ef4444; color: #fecaca; }
+        .signature-status { font-size: 0.65rem; margin-top: 8px; text-align: center; }
+        .action-buttons { display: flex; gap: 12px; margin-top: 20px; }
+        .btn-primary {
+            flex: 1; background: linear-gradient(135deg, #6d28d9, #4c1d95);
+            padding: 14px; border-radius: 40px; color: white;
+            font-weight: 600; border: none; cursor: pointer;
+        }
+        .btn-secondary {
+            background: #1e1f3a; border: 1px solid #373c6b;
+            padding: 14px; border-radius: 40px; color: #c4b5fd; cursor: pointer;
+        }
+        .status-msg { padding: 10px; border-radius: 16px; margin-top: 16px; font-size: 0.75rem; text-align: center; }
+        .status-success { background: #064e3b; color: #a7f3d0; }
+        .status-error { background: #7f1a1a; color: #fecaca; }
+        .hidden { display: none; }
+        @media (max-width: 480px) {
+            body { padding: 12px; }
+            .mode-btn { padding: 14px 12px; }
+            .mode-icon { font-size: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="app-container">
+    <div class="mode-toggle">
+        <div class="mode-btn collection active" data-mode="collection">
+            <span class="mode-icon">📦</span>
+            <div class="mode-title">Collection</div>
+            <div class="mode-desc">Items for Service</div>
+        </div>
+        <div class="mode-btn delivery" data-mode="delivery">
+            <span class="mode-icon">🚚</span>
+            <div class="mode-title">Delivery</div>
+            <div class="mode-desc">Items to Customer</div>
+        </div>
+    </div>
+
+    <div class="form-container">
+        <div class="form-header">
+            <h1>✨ Techsys Service System</h1>
+            <div class="business-address">
+                M01, Dar Al Riffa Building, Bur Dubai, UAE | +97143920448 Ext:319
+            </div>
+        </div>
+
+        <form id="mainForm">
+            <input type="hidden" id="modeType" value="collection">
+            
+            <div class="form-section">
+                <div class="section-title">👤 Customer Details</div>
+                <div class="field-group"><label class="required">Customer Name</label><input type="text" id="customerName" required></div>
+                <div class="field-group"><label class="required">Phone Number</label><input type="tel" id="customerPhone" required></div>
+                <div class="field-group"><label class="required">Email</label><input type="email" id="customerEmail" required></div>
+                <div class="field-group"><label>Company</label><input type="text" id="company"></div>
+            </div>
+
+            <div class="form-section">
+                <div class="section-title">👨‍💼 Staff Information</div>
+                <div class="field-group"><label class="required">Staff Name</label><input type="text" id="staffName" list="staffList" placeholder="Select or enter name" required>
+                    <datalist id="staffList"><option>Ahmed</option><option>Mohammed</option><option>Fatima</option><option>Omar</option><option>Sara</option></datalist>
+                </div>
+            </div>
+
+            <div id="collectionSection">
+                <div class="form-section">
+                    <div class="section-title">
+                        📋 Products for Service
+                        <button type="button" class="add-product-btn" id="addProductBtn" style="float:right;">+ Add Product</button>
+                        <div style="clear:both"></div>
+                    </div>
+                    <table class="products-table" id="productsTable">
+                        <thead><tr><th>Serial Number</th><th>Model/Brand</th><th>Issue</th><th>Action</th></tr></thead>
+                        <tbody id="productsBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="deliverySection" class="hidden">
+                <div class="form-section">
+                    <div class="section-title">📍 Delivery Location</div>
+                    <div class="field-group"><label>Delivery Address</label><textarea id="deliveryAddress" rows="2" placeholder="Full delivery address"></textarea></div>
+                </div>
+                <div class="form-section">
+                    <div class="section-title">📦 Items for Delivery</div>
+                    <div id="deliveryItemsContainer"></div>
+                    <button type="button" class="add-product-btn" id="addDeliveryItemBtn">+ Add Item</button>
+                </div>
+
+                <div class="delivery-confirmation">
+                    <p>✅ DELIVERY CONFIRMATION</p>
+                    <p>I confirm that I have received the above items in <strong>fully functional working condition</strong>.</p>
+                    <small>Please sign below to acknowledge receipt of fully functional items</small>
+                </div>
+
+                <div class="signature-area">
+                    <div class="signature-label">✍️ Customer Signature (Required) <span style="color:#ef4444;">*</span></div>
+                    <canvas id="signatureCanvas" width="500" height="200" style="width:100%; height:auto;"></canvas>
+                    <div class="signature-buttons"><button type="button" class="clear-signature" id="clearSignatureBtn">🗑️ Clear Signature</button></div>
+                    <div id="signatureStatus" class="signature-status">⚠️ Signature required - sign above to confirm items are fully functional</div>
+                </div>
+            </div>
+
+            <div class="location-preview" id="geoStatus">🌍 Waiting for location...</div>
+
+            <div class="action-buttons">
+                <button type="button" class="btn-secondary" id="resetBtn">Clear</button>
+                <button type="submit" class="btn-primary" id="submitBtn">📊 Submit & Print 🧾</button>
+            </div>
+            <div id="statusMsg" class="status-msg"></div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // ============================================================
+    // GOOGLE APPS SCRIPT URL - CONFIGURED AND READY
+    // ============================================================
+    const GOOGLE_SHEETS_URL = "https://script.google.com/macros/s/AKfycbyZZCC19kAW0GY5DLBVLkGuGln5me8hfhAMJh5JIRF2BztZv5uSsq4j26yBzx7RjQQnyw/exec";
+    
+    // ============================================================
+    // SIGNATURE PAD CODE
+    // ============================================================
+    
+    let signatureData = null;
+    let isDrawing = false;
+    let lastX = 0, lastY = 0;
+    
+    const canvas = document.getElementById('signatureCanvas');
+    const ctx = canvas.getContext('2d');
+    
+    function resizeCanvas() {
+        const container = canvas.parentElement;
+        const width = Math.min(container.clientWidth - 32, 500);
+        canvas.width = width;
+        canvas.height = 180;
+        canvas.style.width = `${width}px`;
+        canvas.style.height = '180px';
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = 2;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.fillStyle = 'white';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+    
+    function getCanvasCoordinates(e) {
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        let clientX, clientY;
+        if (e.touches) { clientX = e.touches[0].clientX; clientY = e.touches[0].clientY; }
+        else { clientX = e.clientX; clientY = e.clientY; }
+        let x = (clientX - rect.left) * scaleX;
+        let y = (clientY - rect.top) * scaleY;
+        x = Math.max(0, Math.min(canvas.width, x));
+        y = Math.max(0, Math.min(canvas.height, y));
+        return { x, y };
+    }
+    
+    function startDrawing(e) { isDrawing = true; const coords = getCanvasCoordinates(e); lastX = coords.x; lastY = coords.y; ctx.beginPath(); ctx.moveTo(lastX, lastY); e.preventDefault(); }
+    function draw(e) { if (!isDrawing) return; e.preventDefault(); const coords = getCanvasCoordinates(e); ctx.lineTo(coords.x, coords.y); ctx.stroke(); ctx.beginPath(); ctx.moveTo(coords.x, coords.y); lastX = coords.x; lastY = coords.y; }
+    function stopDrawing() { isDrawing = false; ctx.beginPath(); checkSignatureEmpty(); }
+    function clearSignature() { ctx.fillStyle = 'white'; ctx.fillRect(0, 0, canvas.width, canvas.height); signatureData = null; document.getElementById('signatureStatus').innerHTML = '⚠️ Signature required'; document.getElementById('signatureStatus').style.color = '#f472b6'; }
+    function checkSignatureEmpty() {
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        let hasNonWhite = false;
+        for (let i = 0; i < imageData.data.length; i += 4) {
+            if (imageData.data[i] < 250 || imageData.data[i+1] < 250 || imageData.data[i+2] < 250) { hasNonWhite = true; break; }
+        }
+        if (hasNonWhite) { signatureData = canvas.toDataURL('image/png'); document.getElementById('signatureStatus').innerHTML = '✅ Signature captured'; document.getElementById('signatureStatus').style.color = '#22c55e'; return true; }
+        else { signatureData = null; return false; }
+    }
+    
+    canvas.addEventListener('mousedown', startDrawing); canvas.addEventListener('mousemove', draw); canvas.addEventListener('mouseup', stopDrawing); canvas.addEventListener('mouseleave', stopDrawing);
+    canvas.addEventListener('touchstart', startDrawing); canvas.addEventListener('touchmove', draw); canvas.addEventListener('touchend', stopDrawing); canvas.addEventListener('touchcancel', stopDrawing);
+    document.getElementById('clearSignatureBtn').addEventListener('click', clearSignature);
+    window.addEventListener('resize', () => { const oldSig = signatureData; resizeCanvas(); if(oldSig) { const img = new Image(); img.onload = () => { ctx.drawImage(img, 0, 0, canvas.width, canvas.height); signatureData = canvas.toDataURL('image/png'); }; img.src = oldSig; } });
+    
+    // ============================================================
+    // MAIN FORM LOGIC
+    // ============================================================
+    
+    let currentMode = 'collection';
+    let collectionProducts = [{ serial: '', model: '', issue: '' }];
+    let deliveryItems = [];
+    let geoLocation = null;
+    
+    document.querySelectorAll('.mode-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentMode = btn.dataset.mode;
+            document.getElementById('modeType').value = currentMode;
+            if (currentMode === 'collection') { document.getElementById('collectionSection').classList.remove('hidden'); document.getElementById('deliverySection').classList.add('hidden'); }
+            else { document.getElementById('collectionSection').classList.add('hidden'); document.getElementById('deliverySection').classList.remove('hidden'); clearSignature(); }
+        });
+    });
+    
+    function getLocation() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => { geoLocation = { lat: position.coords.latitude, lng: position.coords.longitude }; document.getElementById('geoStatus').innerHTML = `📍 Location: ${geoLocation.lat.toFixed(6)}, ${geoLocation.lng.toFixed(6)}`; },
+                () => { document.getElementById('geoStatus').innerHTML = '⚠️ Location access denied'; }
+            );
+        } else { document.getElementById('geoStatus').innerHTML = '⚠️ Geolocation not supported'; }
+    }
+    getLocation();
+    
+    function renderProductsTable() {
+        const tbody = document.getElementById('productsBody'); tbody.innerHTML = '';
+        collectionProducts.forEach((product, idx) => {
+            const row = tbody.insertRow();
+            row.insertCell(0).innerHTML = `<input type="text" value="${product.serial}" class="product-serial" data-idx="${idx}" placeholder="Serial/IMEI" style="width:100%">`;
+            row.insertCell(1).innerHTML = `<input type="text" value="${product.model}" class="product-model" data-idx="${idx}" placeholder="Model" style="width:100%">`;
+            row.insertCell(2).innerHTML = `<input type="text" value="${product.issue}" class="product-issue" data-idx="${idx}" placeholder="Issue" style="width:100%">`;
+            row.insertCell(3).innerHTML = `<span class="delete-row" data-idx="${idx}">🗑️</span>`;
+        });
+        document.querySelectorAll('.product-serial').forEach(inp => { inp.addEventListener('change', (e) => collectionProducts[e.target.dataset.idx].serial = e.target.value); });
+        document.querySelectorAll('.product-model').forEach(inp => { inp.addEventListener('change', (e) => collectionProducts[e.target.dataset.idx].model = e.target.value); });
+        document.querySelectorAll('.product-issue').forEach(inp => { inp.addEventListener('change', (e) => collectionProducts[e.target.dataset.idx].issue = e.target.value); });
+        document.querySelectorAll('.delete-row').forEach(btn => { btn.addEventListener('click', (e) => { collectionProducts.splice(parseInt(e.target.dataset.idx), 1); if (collectionProducts.length === 0) collectionProducts = [{ serial: '', model: '', issue: '' }]; renderProductsTable(); }); });
+    }
+    document.getElementById('addProductBtn').addEventListener('click', () => { collectionProducts.push({ serial: '', model: '', issue: '' }); renderProductsTable(); });
+    renderProductsTable();
+    
+    function renderDeliveryItems() {
+        const container = document.getElementById('deliveryItemsContainer'); container.innerHTML = '';
+        deliveryItems.forEach((item, idx) => {
+            const div = document.createElement('div');
+            div.style.background = '#0e1122'; div.style.borderRadius = '16px'; div.style.padding = '12px'; div.style.marginBottom = '12px';
+            div.innerHTML = `<div class="field-group"><label>Serial Number</label><input type="text" class="delivery-serial" data-idx="${idx}" value="${item.serial}" placeholder="Scan or enter serial"></div>
+                <div class="field-group"><label>Product Model</label><input type="text" class="delivery-model" data-idx="${idx}" value="${item.model}"></div>
+                <button type="button" class="delete-delivery" data-idx="${idx}" style="background:#ef444430; border:none; padding:6px; border-radius:12px;">Remove</button>`;
+            container.appendChild(div);
+        });
+        document.querySelectorAll('.delivery-serial').forEach(inp => { inp.addEventListener('change', (e) => deliveryItems[e.target.dataset.idx].serial = e.target.value); });
+        document.querySelectorAll('.delivery-model').forEach(inp => { inp.addEventListener('change', (e) => deliveryItems[e.target.dataset.idx].model = e.target.value); });
+        document.querySelectorAll('.delete-delivery').forEach(btn => { btn.addEventListener('click', (e) => { deliveryItems.splice(parseInt(e.target.dataset.idx), 1); renderDeliveryItems(); }); });
+    }
+    document.getElementById('addDeliveryItemBtn')?.addEventListener('click', () => { deliveryItems.push({ serial: '', model: '' }); renderDeliveryItems(); });
+    renderDeliveryItems();
+    
+    function generateToken() { const prefix = currentMode === 'collection' ? 'CL' : 'DL'; const date = new Date(); const seq = Math.floor(Math.random() * 10000); return `${prefix}-${date.getFullYear()}${(date.getMonth()+1).toString().padStart(2,'0')}${date.getDate().toString().padStart(2,'0')}-${seq}`; }
+    
+    async function submitToGoogleSheet(formData) {
+        try {
+            await fetch(GOOGLE_SHEETS_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(formData) });
+            return true;
+        } catch(error) { console.error(error); return false; }
+    }
+    
+    function printReceipt(data) {
+        const win = window.open('', '_blank', 'width=400,height=600');
+        const productsHtml = data.collectionProducts.map(p => `· ${p.serial} | ${p.model} | ${p.issue}`).join('<br>');
+        const deliveryItemsHtml = data.deliveryItems.map(i => `· ${i.serial} | ${i.model}`).join('<br>');
+        win.document.write(`
+            <!DOCTYPE html><html><head><title>Techsys Token</title>
+            <style>body{font-family:monospace;padding:8px;width:80mm;margin:0 auto;}.receipt{border:1px solid #000;padding:8px;}.header{text-align:center;border-bottom:1px dashed #000;margin-bottom:8px;}.token{font-size:14px;font-weight:bold;text-align:center;margin:8px 0;}.divider{border-top:1px dotted #000;margin:8px 0;}</style>
+            </head><body>
+            <div class="receipt"><div class="header"><strong>TECHSYS POS</strong><br>M01, Dar Al Riffa Building, Bur Dubai<br>+97143920448 Ext:319</div>
+            <div class="token">${data.mode === 'collection' ? '📦 COLLECTION TOKEN' : '🚚 DELIVERY TOKEN'}<br>#${data.token}</div>
+            <div><strong>Customer:</strong> ${data.customerName}</div><div><strong>Phone:</strong> ${data.customerPhone}</div>
+            <div><strong>Staff:</strong> ${data.staffName}</div><div><strong>Date:</strong> ${new Date().toLocaleString()}</div>
+            <div class="divider"></div>
+            ${data.mode === 'collection' ? `<strong>Products for Service:</strong><br>${productsHtml || '- None -'}` : 
+              `<strong>Delivery Address:</strong><br>${data.deliveryAddress || 'Address provided'}<div class="divider"></div>
+               <strong>Items Delivered:</strong><br>${deliveryItemsHtml || '- None -'}<div class="divider"></div>
+               <strong>✅ DELIVERY CONFIRMATION</strong><br>I confirm that all items are fully functional.`}
+            <div class="divider"></div><div style="text-align:center;font-size:8px;margin-top:8px;">Thank you for choosing Techsys</div></div>
+            <script>window.print();<\/script></body></html>
+        `);
+        win.document.close();
+    }
+    
+    document.getElementById('mainForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (currentMode === 'delivery') { if (!checkSignatureEmpty()) { document.getElementById('statusMsg').innerHTML = '❌ Signature required!'; document.getElementById('statusMsg').className = 'status-msg status-error'; return; } }
+        const token = generateToken();
+        const formData = {
+            mode: currentMode, timestamp: new Date().toISOString(), token: token,
+            customerName: document.getElementById('customerName').value, customerPhone: document.getElementById('customerPhone').value,
+            customerEmail: document.getElementById('customerEmail').value, company: document.getElementById('company').value,
+            staffName: document.getElementById('staffName').value, geoLocation: geoLocation,
+            collectionProducts: currentMode === 'collection' ? collectionProducts : [],
+            deliveryAddress: currentMode === 'delivery' ? document.getElementById('deliveryAddress').value : '',
+            deliveryItems: currentMode === 'delivery' ? deliveryItems : [],
+            signature: currentMode === 'delivery' ? signatureData : null,
+            deliveryConfirmation: currentMode === 'delivery' ? "All items are fully functional" : null
+        };
+        if (!formData.customerName || !formData.customerPhone || !formData.customerEmail || !formData.staffName) {
+            document.getElementById('statusMsg').innerHTML = '❌ Please fill all required fields'; document.getElementById('statusMsg').className = 'status-msg status-error'; return;
+        }
+        const submitBtn = document.getElementById('submitBtn'); submitBtn.disabled = true; submitBtn.innerHTML = '⏳ Processing...';
+        try { await submitToGoogleSheet(formData); document.getElementById('statusMsg').innerHTML = `✅ ${currentMode === 'collection' ? 'Collection' : 'Delivery'} submitted! Token: ${token}`; document.getElementById('statusMsg').className = 'status-msg status-success'; printReceipt(formData); resetForm(); }
+        catch(error) { document.getElementById('statusMsg').innerHTML = '❌ Error submitting'; document.getElementById('statusMsg').className = 'status-msg status-error'; }
+        finally { submitBtn.disabled = false; submitBtn.innerHTML = '📊 Submit & Print 🧾'; }
+    });
+    
+    function resetForm() {
+        document.getElementById('customerName').value = ''; document.getElementById('customerPhone').value = ''; document.getElementById('customerEmail').value = '';
+        document.getElementById('company').value = ''; document.getElementById('staffName').value = ''; document.getElementById('deliveryAddress').value = '';
+        collectionProducts = [{ serial: '', model: '', issue: '' }]; deliveryItems = [];
+        renderProductsTable(); renderDeliveryItems(); clearSignature(); getLocation();
+    }
+    document.getElementById('resetBtn').addEventListener('click', resetForm);
+    resizeCanvas();
+</script>
+</body>
+</html>
